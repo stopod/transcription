@@ -1,0 +1,146 @@
+:root {
+  --text: #333;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #1a73e8;
+  --error: #c62828;
+
+  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #d0d0d0;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #6ea8fe;
+  }
+}
+
+body {
+  margin: 0;
+}
+
+#app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1rem;
+  min-height: 100svh;
+  box-sizing: border-box;
+}
+
+h1 {
+  font-size: 1.6rem;
+  margin: 0 0 1rem;
+  color: var(--text-h);
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 1.5rem 0 0.5rem;
+  color: var(--text-h);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+#rec-btn {
+  font-size: 1.1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+#rec-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.file-btn {
+  display: inline-block;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+}
+
+#rec-status {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.job-card {
+  border: 1px solid var(--border);
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.transcript {
+  white-space: pre-wrap;
+  background: var(--code-bg);
+  padding: 1rem;
+  border-radius: 6px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.9rem;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.error {
+  color: var(--error);
+}
+
+ul#history {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul#history li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+ul#history a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+footer {
+  margin-top: 2rem;
+  color: var(--text);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+button#copy-btn {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-h);
+}

@@ -1,0 +1,32 @@
+# Project data
+/backend/data
+
+# Audio samples / test artifacts
+*.aac
+*.m4a
+*.mp3
+*.wav
+*.webm
+*.ogg
+*.opus
+*.flac
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local env overrides (if placed at root)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
