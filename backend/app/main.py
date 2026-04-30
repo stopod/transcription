@@ -40,6 +40,8 @@ def health() -> dict:
         "model_size": settings.model_size,
         "device": settings.device,
         "compute_type": settings.compute_type,
+        "summary_enabled": settings.summary_enabled,
+        "ollama_model": settings.ollama_model if settings.summary_enabled else None,
     }
 
 
@@ -76,7 +78,13 @@ def get_job(job_id: str) -> JobDetail:
     if meta is None:
         raise HTTPException(status_code=404, detail="job not found")
     text, segments = storage.read_transcript(job_id)
-    return JobDetail(**meta.model_dump(), text=text, segments=segments)
+    summary = storage.read_summary(job_id)
+    return JobDetail(
+        **meta.model_dump(),
+        text=text,
+        segments=segments,
+        summary=summary,
+    )
 
 
 @app.get("/jobs/{job_id}/transcript", response_class=PlainTextResponse)
@@ -85,3 +93,11 @@ def get_transcript(job_id: str) -> str:
     if text is None:
         raise HTTPException(status_code=404, detail="transcript not ready")
     return text
+
+
+@app.get("/jobs/{job_id}/summary", response_class=PlainTextResponse)
+def get_summary(job_id: str) -> str:
+    summary = storage.read_summary(job_id)
+    if summary is None:
+        raise HTTPException(status_code=404, detail="summary not ready")
+    return summary

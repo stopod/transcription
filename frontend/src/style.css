@@ -95,15 +95,37 @@ h2 {
   font-size: 0.95rem;
 }
 
-.transcript {
+.transcript,
+.summary {
   white-space: pre-wrap;
-  background: var(--code-bg);
   padding: 1rem;
   border-radius: 6px;
-  font-family: ui-monospace, Consolas, monospace;
   font-size: 0.9rem;
   max-height: 50vh;
   overflow-y: auto;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.transcript {
+  background: var(--code-bg);
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.summary {
+  background: rgba(26, 115, 232, 0.06);
+  border: 1px solid rgba(26, 115, 232, 0.2);
+  font-family: system-ui, sans-serif;
+}
+
+.section-title {
+  font-size: 0.95rem;
+  margin: 1rem 0 0.25rem;
+  color: var(--text-h);
+}
+
+.muted {
+  color: var(--text);
+  opacity: 0.75;
 }
 
 .error {
@@ -135,7 +157,9 @@ footer {
   padding-top: 1rem;
 }
 
-button#copy-btn {
+button#copy-btn,
+button#copy-transcript,
+button#copy-summary {
   margin-top: 0.5rem;
   padding: 0.4rem 0.8rem;
   border: 1px solid var(--border);

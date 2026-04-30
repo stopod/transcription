@@ -53,7 +53,11 @@ void checkHealth()
 async function checkHealth() {
   try {
     const h = await getHealth()
-    healthEl.textContent = `backend: ${h.status} / ${h.model_size} on ${h.device} (${h.compute_type})`
+    const summary = h.summary_enabled
+      ? ` / summary: ${h.ollama_model ?? 'on'}`
+      : ' / summary: off'
+    healthEl.textContent =
+      `backend: ${h.status} / ${h.model_size} on ${h.device} (${h.compute_type})${summary}`
   } catch (e) {
     healthEl.textContent = `backend: unreachable (${(e as Error).message})`
   }
@@ -123,19 +127,34 @@ function startPolling(jobId: string) {
 }
 
 function renderCurrent(job: JobDetail) {
-  let body = ''
-  if (job.status === 'completed') {
-    if (job.text && job.text.trim()) {
-      body = `<pre class="transcript">${escapeHtml(job.text)}</pre>
-              <button type="button" id="copy-btn">全文コピー</button>`
-    } else {
-      body = `<p>完了しました（音声検出なし — マイク音量が低かった可能性があります）</p>`
-    }
-  } else if (job.status === 'failed') {
-    body = `<p class="error">失敗: ${escapeHtml(job.error ?? '')}</p>`
+  const sections: string[] = []
+
+  if (job.status === 'failed') {
+    sections.push(`<p class="error">失敗: ${escapeHtml(job.error ?? '')}</p>`)
+  } else if (job.status === 'pending' || job.status === 'running') {
+    sections.push(`<p>文字起こし中...</p>`)
   } else {
-    body = `<p>処理中...</p>`
+    if (job.text && job.text.trim()) {
+      sections.push(renderTranscriptSection(job.text))
+    } else if (job.status === 'completed') {
+      sections.push(
+        `<p>完了しました（音声検出なし — マイク音量が低かった可能性があります）</p>`,
+      )
+    }
+
+    if (job.status === 'summarizing') {
+      sections.push(`<p class="muted">要約中...</p>`)
+    } else if (job.status === 'completed') {
+      if (job.summary && job.summary.trim()) {
+        sections.push(renderSummarySection(job.summary))
+      } else if (job.summary_error) {
+        sections.push(
+          `<p class="error">要約失敗: ${escapeHtml(job.summary_error)}</p>`,
+        )
+      }
+    }
   }
+
   currentEl.innerHTML = `
     <div class="job-card">
       <div><strong>${job.id}</strong></div>
@@ -146,16 +165,40 @@ function renderCurrent(job: JobDetail) {
           ? `<div>長さ: ${job.duration_seconds.toFixed(1)} 秒</div>`
           : ''
       }
-      ${body}
+      ${sections.join('\n')}
     </div>
   `
-  const copyBtn = document.querySelector<HTMLButtonElement>('#copy-btn')
-  if (copyBtn && job.text) {
-    copyBtn.addEventListener('click', () => {
+
+  const transcriptCopy = document.querySelector<HTMLButtonElement>('#copy-transcript')
+  if (transcriptCopy && job.text) {
+    transcriptCopy.addEventListener('click', () => {
       void navigator.clipboard.writeText(job.text!)
-      copyBtn.textContent = 'コピー済み'
+      transcriptCopy.textContent = 'コピー済み'
     })
   }
+  const summaryCopy = document.querySelector<HTMLButtonElement>('#copy-summary')
+  if (summaryCopy && job.summary) {
+    summaryCopy.addEventListener('click', () => {
+      void navigator.clipboard.writeText(job.summary!)
+      summaryCopy.textContent = 'コピー済み'
+    })
+  }
+}
+
+function renderTranscriptSection(text: string): string {
+  return `
+    <h3 class="section-title">文字起こし</h3>
+    <pre class="transcript">${escapeHtml(text)}</pre>
+    <button type="button" id="copy-transcript">文字起こしをコピー</button>
+  `
+}
+
+function renderSummarySection(summary: string): string {
+  return `
+    <h3 class="section-title">要約</h3>
+    <pre class="summary">${escapeHtml(summary)}</pre>
+    <button type="button" id="copy-summary">要約をコピー</button>
+  `
 }
 
 async function refreshHistory() {

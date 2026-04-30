@@ -34,7 +34,7 @@ _add_cuda_dll_directories()
 
 from faster_whisper import WhisperModel  # noqa: E402  (must follow DLL setup)
 
-from . import storage
+from . import storage, summarize as summarizer
 from .config import settings
 from .schemas import JobStatus, Segment
 
@@ -121,12 +121,27 @@ def _run(job_id: str, audio_path: Path) -> None:
             prev_end = seg.end
         full_text = "\n".join(text_lines).strip()
         storage.write_transcript(job_id, full_text, segments)
-        storage.update_meta(
-            job_id,
-            status=JobStatus.completed,
-            detected_language=info.language,
-            duration_seconds=info.duration,
-        )
+        if settings.summary_enabled and full_text:
+            storage.update_meta(
+                job_id,
+                status=JobStatus.summarizing,
+                detected_language=info.language,
+                duration_seconds=info.duration,
+            )
+            try:
+                summary_text = summarizer.summarize(full_text)
+                storage.write_summary(job_id, summary_text)
+            except Exception as exc:
+                logger.exception("Summarization failed for job %s", job_id)
+                storage.update_meta(job_id, summary_error=str(exc))
+            storage.update_meta(job_id, status=JobStatus.completed)
+        else:
+            storage.update_meta(
+                job_id,
+                status=JobStatus.completed,
+                detected_language=info.language,
+                duration_seconds=info.duration,
+            )
     except Exception as exc:
         logger.exception("Transcription failed for job %s", job_id)
         storage.update_meta(job_id, status=JobStatus.failed, error=str(exc))

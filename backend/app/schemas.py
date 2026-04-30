@@ -7,6 +7,7 @@ from pydantic import BaseModel
 class JobStatus(str, Enum):
     pending = "pending"
     running = "running"
+    summarizing = "summarizing"
     completed = "completed"
     failed = "failed"
 
@@ -28,8 +29,10 @@ class JobMeta(BaseModel):
     detected_language: str | None = None
     duration_seconds: float | None = None
     error: str | None = None
+    summary_error: str | None = None
 
 
 class JobDetail(JobMeta):
     text: str | None = None
     segments: list[Segment] | None = None
+    summary: str | None = None

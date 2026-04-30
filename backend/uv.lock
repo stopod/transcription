@@ -1070,6 +1070,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "faster-whisper" },
+    { name = "httpx" },
     { name = "nvidia-cublas-cu12" },
     { name = "nvidia-cuda-runtime-cu12" },
     { name = "nvidia-cudnn-cu12" },
@@ -1082,6 +1083,7 @@ dependencies = [
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
     { name = "faster-whisper", specifier = ">=1.1" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "nvidia-cublas-cu12", specifier = ">=12.9.2.10" },
     { name = "nvidia-cuda-runtime-cu12", specifier = ">=12.9.79" },
     { name = "nvidia-cudnn-cu12", specifier = ">=9.21.1.3" },

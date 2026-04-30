@@ -1,4 +1,9 @@
-export type JobStatus = 'pending' | 'running' | 'completed' | 'failed'
+export type JobStatus =
+  | 'pending'
+  | 'running'
+  | 'summarizing'
+  | 'completed'
+  | 'failed'
 
 export interface JobMeta {
   id: string
@@ -11,6 +16,7 @@ export interface JobMeta {
   detected_language: string | null
   duration_seconds: number | null
   error: string | null
+  summary_error: string | null
 }
 
 export interface Segment {
@@ -22,6 +28,7 @@ export interface Segment {
 export interface JobDetail extends JobMeta {
   text: string | null
   segments: Segment[] | null
+  summary: string | null
 }
 
 export interface Health {
@@ -29,6 +36,8 @@ export interface Health {
   model_size: string
   device: string
   compute_type: string
+  summary_enabled: boolean
+  ollama_model: string | null
 }
 
 const BASE = '/api'

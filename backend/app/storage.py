@@ -67,6 +67,10 @@ def segments_path(job_id: str) -> Path:
     return _job_dir(job_id) / "segments.json"
 
 
+def summary_path(job_id: str) -> Path:
+    return _job_dir(job_id) / "summary.txt"
+
+
 def write_transcript(job_id: str, text: str, segments: list[Segment]) -> None:
     transcript_path(job_id).write_text(text, encoding="utf-8")
     segments_path(job_id).write_text(
@@ -92,6 +96,17 @@ def read_transcript(job_id: str) -> tuple[str | None, list[Segment] | None]:
     return text, segments
 
 
+def write_summary(job_id: str, text: str) -> None:
+    summary_path(job_id).write_text(text, encoding="utf-8")
+
+
+def read_summary(job_id: str) -> str | None:
+    p = summary_path(job_id)
+    if not p.exists():
+        return None
+    return p.read_text(encoding="utf-8")
+
+
 def list_jobs() -> list[JobMeta]:
     base = settings.data_dir / "jobs"
     if not base.exists():
@@ -107,9 +122,10 @@ def list_jobs() -> list[JobMeta]:
 
 
 def fail_orphaned_jobs(message: str) -> int:
+    in_progress = (JobStatus.pending, JobStatus.running, JobStatus.summarizing)
     count = 0
     for meta in list_jobs():
-        if meta.status in (JobStatus.pending, JobStatus.running):
+        if meta.status in in_progress:
             update_meta(meta.id, status=JobStatus.failed, error=message)
             count += 1
     return count
