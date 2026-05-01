@@ -15,7 +15,12 @@ def _job_dir(job_id: str) -> Path:
     return settings.data_dir / "jobs" / job_id
 
 
-def create_job(audio_filename: str, model: str, language: str | None) -> JobMeta:
+def create_job(
+    audio_filename: str,
+    model: str,
+    language: str | None,
+    template_id: str | None = None,
+) -> JobMeta:
     job_id = uuid.uuid4().hex
     _job_dir(job_id).mkdir(parents=True, exist_ok=False)
     meta = JobMeta(
@@ -26,6 +31,7 @@ def create_job(audio_filename: str, model: str, language: str | None) -> JobMeta
         audio_filename=audio_filename,
         model=model,
         language=language,
+        template_id=template_id,
     )
     write_meta(meta)
     return meta

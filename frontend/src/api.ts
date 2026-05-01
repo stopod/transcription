@@ -17,6 +17,14 @@ export interface JobMeta {
   duration_seconds: number | null
   error: string | null
   summary_error: string | null
+  template_id: string | null
+}
+
+export interface Template {
+  id: string
+  name: string
+  description: string | null
+  prompt: string
 }
 
 export interface Segment {
@@ -60,14 +68,21 @@ export async function getJob(id: string): Promise<JobDetail> {
   return res.json()
 }
 
+export async function getTemplates(): Promise<Template[]> {
+  const res = await fetch(`${BASE}/templates`)
+  if (!res.ok) throw new Error(`getTemplates failed: ${res.status}`)
+  return res.json()
+}
+
 export async function createJob(
   audio: Blob,
   filename: string,
-  language?: string,
+  options: { language?: string; templateId?: string } = {},
 ): Promise<JobMeta> {
   const fd = new FormData()
   fd.append('audio', audio, filename)
-  if (language) fd.append('language', language)
+  if (options.language) fd.append('language', options.language)
+  if (options.templateId) fd.append('template_id', options.templateId)
   const res = await fetch(`${BASE}/jobs`, { method: 'POST', body: fd })
   if (!res.ok) throw new Error(`createJob failed: ${res.status}`)
   return res.json()

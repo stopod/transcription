@@ -6,9 +6,10 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
-from . import storage, transcribe
+from . import storage, templates, transcribe
 from .config import CORS_ORIGINS, settings
 from .schemas import JobDetail, JobMeta
+from .templates import Template
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -49,22 +50,34 @@ def health() -> dict:
 async def create_job(
     audio: UploadFile = File(...),
     language: str | None = Form(default=None),
+    template_id: str | None = Form(default=None),
 ) -> JobMeta:
     if audio.filename is None:
         raise HTTPException(status_code=400, detail="audio file required")
+    if template_id and templates.get_template(template_id) is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"template not found: {template_id}",
+        )
     suffix = Path(audio.filename).suffix or ".bin"
     lang = language or settings.default_language
     meta = storage.create_job(
         audio_filename=audio.filename,
         model=settings.model_size,
         language=lang,
+        template_id=template_id,
     )
     dest = storage.audio_path(meta.id, suffix)
     with dest.open("wb") as f:
         while chunk := await audio.read(1024 * 1024):
             f.write(chunk)
-    transcribe.submit(meta.id, dest)
+    transcribe.submit(meta.id, dest, template_id=template_id)
     return meta
+
+
+@app.get("/templates", response_model=list[Template])
+def list_templates_endpoint() -> list[Template]:
+    return templates.list_templates()
 
 
 @app.get("/jobs", response_model=list[JobMeta])

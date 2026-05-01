@@ -3,6 +3,7 @@ import {
   createJob,
   getHealth,
   getJob,
+  getTemplates,
   listJobs,
   type JobDetail,
   type JobMeta,
@@ -21,6 +22,12 @@ app.innerHTML = `
       <label id="file-label" class="file-btn">
         ファイルを取り込み
         <input id="file-input" type="file" accept="audio/*,.aac,.m4a,.mp3,.wav,.flac,.ogg,.opus,.webm" hidden />
+      </label>
+      <label class="template-label">
+        要約テンプレート:
+        <select id="template-select">
+          <option value="">(デフォルト)</option>
+        </select>
       </label>
       <span id="rec-status">未録音</span>
     </section>
@@ -41,6 +48,7 @@ app.innerHTML = `
 const recBtn = document.querySelector<HTMLButtonElement>('#rec-btn')!
 const recStatus = document.querySelector<HTMLSpanElement>('#rec-status')!
 const fileInput = document.querySelector<HTMLInputElement>('#file-input')!
+const templateSelect = document.querySelector<HTMLSelectElement>('#template-select')!
 const currentEl = document.querySelector<HTMLDivElement>('#current')!
 const historyEl = document.querySelector<HTMLUListElement>('#history')!
 const healthEl = document.querySelector<HTMLSpanElement>('#health')!
@@ -49,6 +57,7 @@ recBtn.addEventListener('click', onToggleRecord)
 fileInput.addEventListener('change', onPickFile)
 void refreshHistory()
 void checkHealth()
+void loadTemplates()
 
 async function checkHealth() {
   try {
@@ -103,10 +112,25 @@ async function onPickFile() {
 
 async function uploadAndTrack(blob: Blob, filename: string) {
   recStatus.textContent = `アップロード中 (${(blob.size / 1024 / 1024).toFixed(1)} MB)...`
-  const meta = await createJob(blob, filename)
+  const templateId = templateSelect.value || undefined
+  const meta = await createJob(blob, filename, { templateId })
   recStatus.textContent = `ジョブ作成: ${meta.id}`
   startPolling(meta.id)
   await refreshHistory()
+}
+
+async function loadTemplates() {
+  try {
+    const tpls = await getTemplates()
+    for (const t of tpls) {
+      const opt = document.createElement('option')
+      opt.value = t.id
+      opt.textContent = t.description ? `${t.name} — ${t.description}` : t.name
+      templateSelect.appendChild(opt)
+    }
+  } catch (e) {
+    console.warn('Failed to load templates', e)
+  }
 }
 
 function startPolling(jobId: string) {
@@ -160,6 +184,11 @@ function renderCurrent(job: JobDetail) {
       <div><strong>${job.id}</strong></div>
       <div>状態: ${job.status}</div>
       <div>言語: ${job.detected_language ?? job.language ?? 'auto'}</div>
+      ${
+        job.template_id
+          ? `<div>テンプレート: ${escapeHtml(job.template_id)}</div>`
+          : ''
+      }
       ${
         job.duration_seconds
           ? `<div>長さ: ${job.duration_seconds.toFixed(1)} 秒</div>`

@@ -30,6 +30,7 @@ class JobMeta(BaseModel):
     duration_seconds: float | None = None
     error: str | None = None
     summary_error: str | None = None
+    template_id: str | None = None
 
 
 class JobDetail(JobMeta):

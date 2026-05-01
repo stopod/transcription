@@ -63,8 +63,8 @@ def get_model() -> WhisperModel:
     return _model
 
 
-def submit(job_id: str, audio_path: Path) -> None:
-    _executor.submit(_run, job_id, audio_path)
+def submit(job_id: str, audio_path: Path, template_id: str | None = None) -> None:
+    _executor.submit(_run, job_id, audio_path, template_id)
 
 
 def _normalize_to_wav(src: Path) -> Path:
@@ -90,7 +90,7 @@ def _normalize_to_wav(src: Path) -> Path:
     return dst
 
 
-def _run(job_id: str, audio_path: Path) -> None:
+def _run(job_id: str, audio_path: Path, template_id: str | None = None) -> None:
     try:
         storage.update_meta(job_id, status=JobStatus.running)
         meta = storage.read_meta(job_id)
@@ -129,7 +129,7 @@ def _run(job_id: str, audio_path: Path) -> None:
                 duration_seconds=info.duration,
             )
             try:
-                summary_text = summarizer.summarize(full_text)
+                summary_text = summarizer.summarize(full_text, template_id=template_id)
                 storage.write_summary(job_id, summary_text)
             except Exception as exc:
                 logger.exception("Summarization failed for job %s", job_id)
