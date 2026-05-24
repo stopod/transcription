@@ -178,3 +178,6 @@ OpenAPI ドキュメントは起動中に [http://127.0.0.1:8000/docs](http://12
 | Whisper モデル | `%USERPROFILE%\.cache\huggingface\hub\` |
 
 `backend/data/` は `.gitignore` 対象。古いジョブを消すにはディレクトリごと削除すれば良い。
+
+## メモ
+https://www.notion.so/2026-366e5b01b0ab809b82fec20860b5c82a?source=copy_link
